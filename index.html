@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Routine by Sajid</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #333; /* এডিটিং এর সময় ব্যাকগ্রাউন্ড কালো থাকবে */
+            font-family: 'Hind Siliguri', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* বাটন প্যানেল */
+        .control-panel {
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            background: #222;
+            width: 100%;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+        }
+        .btn-img { background: #1976d2; }
+        .btn-pdf { background: #d32f2f; }
+
+        /* মেইন পেপার কন্টেইনার */
+        .paper-wrapper {
+            padding: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        /* রুটিন পেপার - বর্ডার বা শ্যাডো ছাড়া */
+        #routine-paper {
+            width: 1123px;  /* A4 Width (High Res) */
+            height: 794px; /* A4 Height */
+            background: white;
+            /* বর্ডার এবং শ্যাডো রিমুভ করা হয়েছে */
+            box-shadow: none; 
+            border: none;
+            padding: 0;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            transform-origin: top center;
+        }
+
+        /* কন্টেন্ট এরিয়া */
+        .inner-content {
+            padding: 20px; /* ভিতরের মার্জিন */
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #eee; /* হালকা বর্ডার শুধু বুঝার জন্য */
+        }
+
+        /* হেডার ডিজাইন */
+        .header {
+            background: #0277bd; /* সলিড কালার */
+            color: white;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 0;
+        }
+        .header h1 { margin: 0; font-size: 32px; }
+        .header p { margin: 5px 0 0 0; font-size: 16px; opacity: 0.9; }
+
+        /* টেবিল ডিজাইন */
+        .routine-table {
+            width: 100%;
+            height: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .routine-table th, .routine-table td {
+            border: 1px solid #546e7a;
+            vertical-align: top;
+        }
+
+        .routine-table th {
+            color: white;
+            font-size: 18px;
+            text-transform: uppercase;
+            height: 45px;
+            vertical-align: middle;
+            background: #37474f; /* ডিফল্ট হেডার কালার */
+        }
+
+        /* কলাম কালার */
+        .th-no { width: 60px; background: #263238; }
+        .th-date { width: 130px; background: #455a64; }
+        .th-phy { background: #1565c0; }
+        .th-chem { background: #2e7d32; }
+        .th-math { background: #ef6c00; }
+        .th-bio { background: #7b1fa2; }
+
+        /* ইনপুট ফিল্ড */
+        .input-area {
+            width: 100%;
+            height: 100%;
+            min-height: 55px;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: 'Hind Siliguri', sans-serif;
+            font-size: 18px; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+            font-weight: 600;
+            color: #000;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+        /* সাজিদ ক্রেডিট ফুটার */
+        .footer {
+            text-align: right;
+            font-size: 14px;
+            color: #555;
+            margin-top: 5px;
+            padding-right: 10px;
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        /* ব্যাকগ্রাউন্ড */
+        .bg-phy { background: #e3f2fd; }
+        .bg-chem { background: #e8f5e9; }
+        .bg-math { background: #fff3e0; }
+        .bg-bio { background: #f3e5f5; }
+        .td-no { background: #cfd8dc; text-align: center; font-weight: bold; font-size: 22px; color: #333; vertical-align: middle !important;}
+        
+        .date-input { text-align: center; color: #d32f2f; font-weight: 700; display:flex; align-items:center; justify-content:center;}
+
+    </style>
+</head>
+<body onload="fitToScreen()" onresize="fitToScreen()">
+
+    <div class="control-panel">
+        <button class="btn btn-img" onclick="downloadContent('jpg')" id="imgBtn">📷 JPG Download</button>
+        <button class="btn btn-pdf" onclick="downloadContent('pdf')" id="pdfBtn">📄 PDF Download</button>
+    </div>
+
+    <div class="paper-wrapper">
+        <div id="routine-paper">
+            <div class="inner-content">
+                <div class="header">
+                    <h1 contenteditable="true">এইচএসসি এডমিশন মডেল টেস্ট রুটিন</h1>
+                    <p contenteditable="true">টার্গেট: ১০ দিনের স্পেশাল ক্র্যাশ কোর্স</p>
+                </div>
+
+                <table class="routine-table">
+                    <thead>
+                        <tr>
+                            <th class="th-no">No</th>
+                            <th class="th-date">Date</th>
+                            <th class="th-phy">Physics</th>
+                            <th class="th-chem">Chemistry</th>
+                            <th class="th-math">Math</th>
+                            <th class="th-bio">Biology</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ১. টেবিল জেনারেটর
+        const tbody = document.getElementById('table-body');
+        for (let i = 1; i <= 10; i++) {
+            let isFinal = i > 8;
+            let noBg = isFinal ? '#c62828' : '#cfd8dc';
+            let noCol = isFinal ? 'white' : '#333';
+            let num = i < 10 ? '0' + i : i;
+
+            let html = `
+            <tr>
+                <td class="td-no" style="background:${noBg}; color:${noCol}">${num}</td>
+                <td style="background:#fff"><div class="input-area date-input" contenteditable="true"></div></td>
+                <td class="bg-phy"><div class="input-area" contenteditable="true"></div></td>
+                <td class="bg-chem"><div class="input-area" contenteditable="true"></div></td>
+                <td class="bg-math"><div class="input-area" contenteditable="true"></div></td>
+                <td class="bg-bio"><div class="input-area" contenteditable="true"></div></td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', html);
+        }
+
+        // ২. স্ক্রিনে ফিট করার ফাংশন (এডিট করার সুবিধার জন্য)
+        function fitToScreen() {
+            const paper = document.getElementById('routine-paper');
+            const wrapper = document.querySelector('.paper-wrapper');
+            const availableWidth = window.innerWidth - 20; 
+            let scale = availableWidth / 1123;
+            if (scale > 1) scale = 1;
+            
+            paper.style.transform = `scale(${scale})`;
+            wrapper.style.height = (800 * scale + 50) + 'px';
+        }
+
+        // ৩. আল্ট্রা হাই কোয়ালিটি ডাউনলোড ইঞ্জিন
+        async function downloadContent(type) {
+            const paper = document.getElementById('routine-paper');
+            const btn = type === 'jpg' ? document.getElementById('imgBtn') : document.getElementById('pdfBtn');
+            const originalText = btn.innerText;
+            
+            btn.innerText = "⏳ Processing...";
+            
+            // জুম রিসেট (হাই কোয়ালিটি ক্যাপচারের জন্য)
+            const currentTransform = paper.style.transform;
+            paper.style.transform = 'scale(1)';
+            window.scrollTo(0,0);
+            await new Promise(r => setTimeout(r, 100));
+
+            // কনফিগারেশন: Scale 4 = Ultra HD
+            const canvas = await html2canvas(paper, {
+                scale: 4, 
+                useCORS: true,
+                backgroundColor: '#ffffff', // সাদা ব্যাকগ্রাউন্ড নিশ্চিত করা (বর্ডার ছাড়া)
+                logging: false
+            });
+
+            if (type === 'jpg') {
+                // JPG ডাউনলোড (Quality 1.0 = 100%)
+                const link = document.createElement('a');
+                link.download = 'Routine_Sajid.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 1.0);
+                link.click();
+            } else {
+                // PDF ডাউনলোড
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('l', 'mm', 'a4');
+                pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
+                pdf.save('Routine_Sajid.pdf');
+            }
+
+            // আবার আগের অবস্থায় ফিরিয়ে আনা
+            paper.style.transform = currentTransform;
+            btn.innerText = originalText;
+        }
+    </script>
+</body>
+</html>
